@@ -1,0 +1,88 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location">
+			<value>persomap-config.yml</value>
+		</property>
+	</bean>
+
+	<bean id="clientConfiguration" class="com.amazonaws.ClientConfiguration">
+		<property name="maxConnections">
+			<value>${max_connections}</value>
+		</property>
+		<property name="maxErrorRetry">
+			<value>${max_error_retry}</value>
+		</property>
+		<property name="connectionTimeout">
+			<value>${connection_timeout}</value>
+		</property>
+	</bean>
+
+	<bean id="basicAWSCredentials" class="com.amazonaws.auth.BasicAWSCredentials">
+		<constructor-arg>
+			<value>${access_key_id}</value>
+		</constructor-arg>
+		<constructor-arg>
+			<value>${secret_access_key}</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="amazonDynamoDBClient" class="com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient">
+		<constructor-arg ref="basicAWSCredentials" />
+		<constructor-arg ref="clientConfiguration" />
+		<property name="endpoint">
+			<value>${aws_endpoint_url}</value>
+		</property>
+	</bean>
+
+	<bean id="dynamoDBMapper"
+		class="com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper">
+		<constructor-arg ref="amazonDynamoDBClient" />
+	</bean>
+
+	<bean id="persoMapDao" class="com.adswizz.ms.persomap.dao.PersoMapDaoImpl">
+		<constructor-arg ref="dynamoDBMapper" />
+		<constructor-arg>
+			<value>${max_retain_days}</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="connectionFactory" class="net.spy.memcached.BinaryConnectionFactory" />
+
+	<bean id="addresses" class="net.spy.memcached.AddrUtil"
+		factory-method="getAddresses">
+		<constructor-arg type="java.lang.String" value="${aws_cache_url}" />
+	</bean>
+
+	<bean id="binaryConnectionFactory" class="net.spy.memcached.BinaryConnectionFactory">
+	</bean>
+
+	<bean id="memcachedClient" class="net.spy.memcached.MemcachedClient">
+		<constructor-arg ref="binaryConnectionFactory" />
+		<constructor-arg ref="addresses" />
+	</bean>
+
+	<bean id="cacheService" class="com.adswizz.ms.persomap.cache.CacheServiceImpl">
+		<constructor-arg>
+			<value>${cache_expiry}</value>
+		</constructor-arg>
+		<constructor-arg ref="memcachedClient" />
+	</bean>
+
+	<bean id="persoMapResource" class="com.adswizz.ms.persomap.resource.PersoMapResource">
+		<constructor-arg ref="persoMapDao" />
+		<constructor-arg ref="cacheService" />
+		<constructor-arg>
+			<value>${max_last_update_days}</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="dataCleanUpService" class="com.adswizz.ms.persomap.service.DataCleanUpService">
+		<constructor-arg ref="persoMapDao" />
+		<constructor-arg ref="cacheService" />
+	</bean>
+</beans>

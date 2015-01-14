@@ -1,0 +1,97 @@
+#Application setting
+  spring_beans_path: beans.xml
+
+  # Period for delete records which are untouched. 
+  max_retain_days : 180
+
+  # Period for update the last_seen_date
+  max_last_update_days : 1
+  
+  # Swagger api host name
+  swagger_host_name : localhost
+
+# Amazon Web service(AWS) setting
+
+  # AWS access key
+  access_key_id : local
+
+  # AWS Secret access key
+  secret_access_key : local
+
+  # AWS Endpoint URL
+  aws_endpoint_url : http://localhost:8000
+
+  # AWS region 	
+  aws_region_name : local
+  
+# Dynamo DB setting
+
+  # Dynamo DB Table name  
+  dynamodb_table_name : develDynamoTable
+  
+  # Maximum connection count  
+  max_connections : 100
+
+  # Connection timeout in miliseconds.
+  connection_timeout : 1000
+  
+  # Retry count if DynamoDB connection is failed. 
+  max_error_retry : 3
+
+# Elastic Cache setting
+
+  # Cache service URL
+  aws_cache_url : localhost:11211
+
+  # Cache expiraryTime in hours
+  cache_expiry : 24
+
+# Background job settings.
+
+  # Initial delay to kick off background job
+  job_delay : 1
+  
+  # Period  duration to run job
+  job_period : 24
+
+  # flag to run background job
+  job_run : true
+
+# Server configuration
+  server:
+    applicationConnectors:
+      - type: http
+        port: 80
+    adminConnectors:
+      - type: http
+        port: 8081
+
+# Logging settings.
+  logging:
+    level: DEBUG
+    loggers:
+      com.adswizz.ms: DEBUG
+    appenders:
+    - type: file
+      currentLogFilename: /var/log/persomap.log
+      threshold: INFO
+      archive: true
+      archivedLogFilenamePattern: /var/log/persomap-%d.log
+      archivedFileCount: 5
+      timeZone: UTC
+ 
+    - type: file
+      threshold: DEBUG
+      currentLogFilename: /var/log/persomap_debug.log
+      archive: true
+      archivedLogFilenamePattern: /var/log/persomap_debug-%d.log
+      archivedFileCount: 5
+      timeZone: UTC
+
+    - type: file
+      threshold: ERROR
+      currentLogFilename: /var/log/persomap_error.log
+      archive: true
+      archivedLogFilenamePattern: /var/log/persomap_error-%d.log
+      archivedFileCount: 5
+      timeZone: UTC
